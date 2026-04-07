@@ -1,0 +1,5 @@
+#Fichiers sensibles
+Server/config/.env
+
+#node modules
+Server/node_modules
