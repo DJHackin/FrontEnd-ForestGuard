@@ -1,0 +1,69 @@
+Voici une liste d'améliorations majeures pour faire évoluer ce projet d'une application de démonstration à une application robuste et prête pour la production.
+
+### 1. Implémentation du Backend et Connexion à la Base de Données
+
+**Problème :** L'application fonctionne actuellement avec des données statiques (`mock data`), ce qui la limite à une simple démonstration visuelle.
+
+**Solution :**
+- **Développer l'API RESTful :** En utilisant Node.js et Express, implémenter toutes les routes décrites dans la section "Endpoints API Recommandés" du fichier `README.md` (par exemple, `/api/sensors`, `/api/incidents`).
+- **Intégrer la base de données :** Utiliser Drizzle ORM (déjà présent dans les dépendances) pour connecter le serveur à une base de données PostgreSQL. Définir les schémas de base de données correspondant aux interfaces `Sensor`, `Incident`, et `Zone`.
+- **Remplacer les données mockées :** Dans le code frontend, remplacer les appels au fichier `mockData.ts` par des requêtes HTTP vers le backend en utilisant `@tanstack/react-query` (déjà configuré).
+
+---
+
+### 2. Mises à Jour en Temps Réel avec WebSockets
+
+**Problème :** Un tableau de bord de surveillance doit refléter les événements instantanément. Le polling HTTP est inefficace.
+
+**Solution :**
+- **Créer un serveur WebSocket :** En utilisant la bibliothèque `ws` (déjà dans `package.json`), mettre en place un serveur WebSocket qui diffuse les événements en temps réel comme spécifié dans `README.md` (`incident:new`, `sensor:status`, etc.).
+- **Connecter le client :** Côté frontend, établir une connexion WebSocket et mettre à jour l'état de l'application (via TanStack Query ou un autre gestionnaire d'état) à la réception des messages. Cela rendra les alertes et les statuts des capteurs dynamiques.
+
+---
+
+### 3. Amélioration de l'Expérience de Développement (DX)
+
+**Problème :** Le script `npm run dev` actuel sert des fichiers statiques, obligeant à recompiler manuellement le projet (`npm run build`) après chaque modification du frontend, ce qui est lent et fastidieux.
+
+**Solution :**
+- **Utiliser le serveur de développement Vite :** Modifier le script de développement pour lancer le serveur de développement Vite en parallèle du serveur backend. Vite offre le Hot Module Replacement (HMR), qui met à jour l'interface utilisateur instantanément sans recharger la page.
+- **Mise en œuvre :**
+  1. Ajouter un script dans `package.json`, par exemple : `"dev:client": "vite"`.
+  2. Lancer le backend (`npm run dev`) et le frontend (`npm run dev:client`) simultanément (par exemple avec `npm-run-all`).
+  3. Configurer un proxy dans `vite.config.ts` pour rediriger les appels API du client Vite vers le serveur Express.
+
+---
+
+### 4. Authentification et Gestion des Utilisateurs
+
+**Problème :** L'application est actuellement publique. Dans un cas d'usage réel, l'accès au tableau de bord devrait être restreint.
+
+**Solution :**
+- **Mettre en place l'authentification :** Utiliser les bibliothèques `passport` et `passport-local` (déjà dans les dépendances) pour créer un système de connexion.
+- **Développement :**
+  1. **Backend :** Créer des routes pour l'inscription (`/register`), la connexion (`/login`) et la déconnexion (`/logout`). Protéger les routes de l'API pour qu'elles ne soient accessibles qu'aux utilisateurs authentifiés.
+  2. **Frontend :** Créer une page de connexion et un système de "routes protégées" pour que seul un utilisateur connecté puisse accéder au `Dashboard`.
+
+---
+
+### 5. Ajout de Tests Automatisés
+
+**Problème :** Le projet ne contient aucun test, ce qui rend les modifications futures risquées et la maintenance compliquée.
+
+**Solution :**
+- **Configurer un framework de test :** Intégrer `Vitest` (un framework de test moderne compatible avec Vite) et `React Testing Library`.
+- **Écrire des tests :**
+  - **Tests unitaires :** Pour les fonctions critiques (ex: `lib/utils.ts`) et les composants UI simples.
+  - **Tests d'intégration :** Pour vérifier que plusieurs composants fonctionnent correctement ensemble (ex: le filtrage des alertes met bien à jour la liste).
+
+---
+
+### 6. Mise en Place d'une Pipeline CI/CD
+
+**Problème :** Le déploiement est actuellement un processus manuel et sujet aux erreurs.
+
+**Solution :**
+- **Automatiser le déploiement :** Créer une pipeline d'Intégration Continue et de Déploiement Continu (CI/CD) avec des outils comme GitHub Actions.
+- **Étapes de la pipeline :**
+  1. **Intégration :** À chaque `push` sur le dépôt, lancer automatiquement les tests et la vérification de types (`npm run check`).
+  2. **Déploiement :** Si l'intégration réussit, construire l'application (`npm run build`) et la déployer automatiquement sur un service d'hébergement (Vercel, Netlify, AWS, etc.).
