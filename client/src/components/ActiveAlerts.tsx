@@ -2,10 +2,12 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { AlertTriangle } from "lucide-react";
 import { AlertCard } from "./AlertCard";
-import { mockIncidents } from "@/lib/mockData";
+import { useAlertes } from "@/hooks/useAlertes";
 
 export function ActiveAlerts() {
-  const activeIncidents = mockIncidents
+  const { data: incidents = [], isLoading, isError } = useAlertes();
+
+  const activeIncidents = incidents
     .filter(i => !i.resolved)
     .sort((a, b) => {
       const priorityOrder = { critical: 0, warning: 1, normal: 2 };
@@ -14,6 +16,9 @@ export function ActiveAlerts() {
       }
       return b.timestamp.getTime() - a.timestamp.getTime();
     });
+
+  if (isLoading) return <p className="text-muted-foreground">Chargement...</p>;
+  if (isError) return <p className="text-red-500">Erreur de connexion au serveur</p>;
 
   return (
     <Card data-testid="active-alerts">
@@ -31,21 +36,6 @@ export function ActiveAlerts() {
       <CardContent className="pt-0">
         {activeIncidents.length === 0 ? (
           <div className="text-center py-12">
-            <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-green-50 dark:bg-green-950 flex items-center justify-center">
-              <svg
-                className="w-8 h-8 text-[#10B981]"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M5 13l4 4L19 7"
-                />
-              </svg>
-            </div>
             <p className="text-lg font-medium text-[#10B981]">Aucune alerte active</p>
             <p className="text-sm text-muted-foreground mt-1">
               Tous les capteurs fonctionnent normalement

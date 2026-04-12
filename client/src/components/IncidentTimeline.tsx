@@ -6,7 +6,7 @@ import type { Incident, SensorType, AlertPriority } from "@/lib/types";
 import { SENSOR_TYPE_LABELS, PRIORITY_LABELS } from "@/lib/types";
 import { formatRelativeTime, formatTime, getDateLabel } from "@/lib/utils";
 import { cn } from "@/lib/utils";
-import { mockIncidents } from "@/lib/mockData";
+import { useAlertes } from "@/hooks/useAlertes";
 import { SensorFilters } from "./SensorFilters";
 
 const sensorIcons: Record<SensorType, typeof Volume2> = {
@@ -130,12 +130,13 @@ function TimelineItem({ incident }: { incident: Incident }) {
 }
 
 export function IncidentTimeline() {
+   const { data: incidents = [], isLoading } = useAlertes();
   const [filter, setFilter] = useState<SensorType | 'all'>('all');
 
   const filteredIncidents = useMemo(() => {
-    if (filter === 'all') return mockIncidents;
-    return mockIncidents.filter(i => i.sensorType === filter);
-  }, [filter]);
+    if (filter === 'all') return incidents;
+    return incidents.filter(i => i.sensorType === filter);
+  }, [filter, incidents]);
 
   const groupedIncidents = useMemo(() => 
     groupIncidentsByDate(filteredIncidents),
@@ -143,12 +144,15 @@ export function IncidentTimeline() {
   );
 
   const counts = useMemo(() => ({
-    all: mockIncidents.length,
-    sound: mockIncidents.filter(i => i.sensorType === 'sound').length,
-    smoke: mockIncidents.filter(i => i.sensorType === 'smoke').length,
-    motion: mockIncidents.filter(i => i.sensorType === 'motion').length,
-  }), []);
+    all: incidents.length,
+    sound: incidents.filter(i => i.sensorType === 'sound').length,
+    smoke: incidents.filter(i => i.sensorType === 'smoke').length,
+    motion: incidents.filter(i => i.sensorType === 'motion').length,
+  }), [incidents]);
 
+  if (isLoading) return <p className="text-muted-foreground">Chargement...</p>;
+
+  if (isLoading) return <p className="text-muted-foreground">Chargement...</p>;
   return (
     <Card data-testid="incident-timeline">
       <CardHeader className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4">
