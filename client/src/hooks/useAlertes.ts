@@ -29,7 +29,7 @@ export function useAlertes() {
   return useQuery({
     queryKey: ['alertes'],
     queryFn: async () => {
-      const res = await fetch('http://localhost:4000/api/alertes');
+     const res = await fetch('https://backend-forestguard-production.up.railway.app/api/alertes');
       if (!res.ok) throw new Error('Erreur chargement alertes');
       const data = await res.json();
       return data.map(mapAlerteToIncident) as Incident[];
